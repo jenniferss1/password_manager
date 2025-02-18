@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from random import choice, randint, shuffle
 import pyperclip
+import json
 
 
 def generate_password():
@@ -26,18 +27,29 @@ def save():
     website = website_entry.get()
     email = email_entry.get()
     password = password_entry.get()
+    new_data = {
+        website :{
+            "email": email,
+            "password": password,
+        }
+    }
 
     if len(website) == 0 or len(password) == 0:
         messagebox.showinfo(title="Ops", message="Please don't leave any field empty!")
     else:
-        is_ok = messagebox.askokcancel(title=website, message=f"These are the details entered: \n"f" Email: {email}\n"
-                                                              f" Password: {password} \n Is it ok to save?")
-        if is_ok:
-            with open("data.txt", "a") as file:
-                file.write(f"{website} | {email} | {password} \n\n")
-                # clear the input fields
-                website_entry.delete(0, END)
-                password_entry.delete(0, END)
+        try:
+            with open("data.json", "r") as file:
+                data = json.load(file)
+        except FileNotFoundError:
+            with open("data.json", "w") as file:
+                json.dump(new_data, file, indent=4)
+        else:
+            data.update(new_data)
+            with open("data.json", "w") as file:
+                json.dump(data, file, indent=4)
+
+        website_entry.delete(0, END)
+        password_entry.delete(0, END)
 
 
 window = Tk()
@@ -70,7 +82,6 @@ generate_password_button.grid(row=3, column=2, sticky="ew")
 add_button = Button(text="Add", width=36, command=save)
 add_button.grid(row=4, column=1, columnspan=2, sticky="ew")
 
-# Configuração das colunas para centralizar
 window.grid_columnconfigure(0, weight=1)
 window.grid_columnconfigure(1, weight=1)
 window.grid_columnconfigure(2, weight=1)
